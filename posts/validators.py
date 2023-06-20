@@ -15,6 +15,9 @@ def password_validator(value:str):
 
 def mail_validator(value:str):
     if  not value.endswith(('mail.ru', 'yandex.ru')):
-        raise serializers.ValidationError("Допустимо использовать только почу mail.ru и yandex.ru")
+        raise serializers.ValidationError("Допустимо использовать только почту mail.ru и yandex.ru")
+
+def age_validator(value):
+    print(value)
 
 

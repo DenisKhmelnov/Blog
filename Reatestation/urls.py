@@ -16,16 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.authtoken import views
 from rest_framework.routers import SimpleRouter
-
-from posts.views import UserViewSet, PostViewSet, CommentViewSet
+from posts.views import UserViewSet, PostViewSet, CommentViewSet, LogoutView
 
 router = SimpleRouter()
 router.register('users', UserViewSet)
 router.register('posts', PostViewSet)
 router.register('comments', CommentViewSet)
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('login/', views.obtain_auth_token),
+    path('logout/', LogoutView.as_view())
 ]

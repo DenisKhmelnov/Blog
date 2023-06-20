@@ -20,6 +20,16 @@ class PostViewSet(ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
+    def create(self, request, *args, **kwargs):
+        birth_date = request.user.birth_date
+
+        if birth_date:
+            age = date.today().year - birth_date.year  # Вычисляем возраст в годах
+            if age < 18:
+                raise ValidationError("Вы должны быть старше 18 лет, чтобы создавать посты.")
+
+        return super().create(request, *args, **kwargs)
+
 
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()

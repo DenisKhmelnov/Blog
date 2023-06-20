@@ -23,7 +23,7 @@ class UserSerializer(ModelSerializer):
 
 
 class PostSerializer(ModelSerializer):
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Post

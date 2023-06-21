@@ -1,12 +1,9 @@
 from datetime import date
-
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-
 from posts.models import User, Post, Comment
 from posts.serializers import UserSerializer, PostSerializer, CommentSerializer
 
@@ -22,11 +19,16 @@ class PostViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         birth_date = request.user.birth_date
+        title: str = request.data.get("title")
 
         if birth_date:
             age = date.today().year - birth_date.year  # Вычисляем возраст в годах
             if age < 18:
                 raise ValidationError("Вы должны быть старше 18 лет, чтобы создавать посты.")
+
+        for word in ["ерунда", "глупость", "чепуха"]:
+            if word in title:
+                raise ValidationError(f"Вы использовали запрещенное слово {word}")
 
         return super().create(request, *args, **kwargs)
 

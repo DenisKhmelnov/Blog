@@ -26,9 +26,28 @@ class UserViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
+def check_forbidden_words(request):
+    title: str = request.data.get("title")
+
+    for word in ["ерунда", "глупость", "чепуха"]:
+        if word in title:
+            raise ValidationError(f"Вы использовали запрещенное слово {word}")
+
+
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        elif self.action in ['retrieve', 'list']:
+            permission_classes = [AllowAny]
+        elif self.action in ['update', 'partial_update']:
+            permission_classes = [IsOwner]
+        elif self.action == 'destroy':
+            permission_classes = [IsOwner | IsAdminUser]
+        return [permission() for permission in permission_classes]
 
     def create(self, request, *args, **kwargs):
         birth_date = request.user.birth_date
@@ -39,11 +58,17 @@ class PostViewSet(ModelViewSet):
             if age < 18:
                 raise ValidationError("Вы должны быть старше 18 лет, чтобы создавать посты.")
 
-        for word in ["ерунда", "глупость", "чепуха"]:
-            if word in title:
-                raise ValidationError(f"Вы использовали запрещенное слово {word}")
+        check_forbidden_words(request)
 
         return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        check_forbidden_words(request)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        check_forbidden_words(request)
+        return super().partial_update(request, *args, **kwargs)
 
 
 class CommentViewSet(ModelViewSet):

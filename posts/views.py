@@ -1,16 +1,29 @@
 from datetime import date
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from posts.models import User, Post, Comment
+from posts.permissions import IsOwner
 from posts.serializers import UserSerializer, PostSerializer, CommentSerializer
 
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [AllowAny]
+        elif self.action in ['retrieve', 'list']:
+            permission_classes = [IsAuthenticated | IsAdminUser]
+        elif self.action in ['update', 'partial_update']:
+            permission_classes = [IsOwner]
+        else:
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
 
 
 class PostViewSet(ModelViewSet):
@@ -36,7 +49,6 @@ class PostViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-
 
 
 class LogoutView(APIView):

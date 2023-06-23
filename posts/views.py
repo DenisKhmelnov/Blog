@@ -46,15 +46,14 @@ class PostViewSet(ModelViewSet):
         elif self.action in ['update', 'partial_update']:
             permission_classes = [IsOwner]
         elif self.action == 'destroy':
-            permission_classes = [IsOwner | IsAdminUser]
+            permission_classes = [IsOwner]
         return [permission() for permission in permission_classes]
 
     def create(self, request, *args, **kwargs):
         birth_date = request.user.birth_date
-        title: str = request.data.get("title")
 
         if birth_date:
-            age = date.today().year - birth_date.year  # Вычисляем возраст в годах
+            age = date.today().year - birth_date.year
             if age < 18:
                 raise ValidationError("Вы должны быть старше 18 лет, чтобы создавать посты.")
 
@@ -74,6 +73,18 @@ class PostViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        elif self.action in ['retrieve', 'list']:
+            permission_classes = [AllowAny]
+        elif self.action in ['update', 'partial_update']:
+            permission_classes = [IsOwner]
+        elif self.action == 'destroy':
+            permission_classes = [IsOwner]
+        return [permission() for permission in permission_classes]
+
 
 
 class LogoutView(APIView):
